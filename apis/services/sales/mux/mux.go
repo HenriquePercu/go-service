@@ -2,14 +2,16 @@ package mux
 
 import (
 	"github.com/HenriquePercu/go-service/apis/services/sales/route/sys/checkapi"
+	"github.com/HenriquePercu/go-service/app/api/mid"
+	"github.com/HenriquePercu/go-service/foundation/logger"
 	"github.com/HenriquePercu/go-service/foundation/web"
 	"os"
 )
 
 // WebAPI constructs a http.Handler with all application routes bound.
-func WebAPI(shutdown chan os.Signal) *web.App {
+func WebAPI(log *logger.Logger, shutdown chan os.Signal) *web.App {
 
-	mux := web.NewApp(shutdown)
+	mux := web.NewApp(shutdown, mid.Logger(log))
 
 	checkapi.Routes(mux)
 
