@@ -42,7 +42,7 @@ func Respond(ctx context.Context, w http.ResponseWriter, data any, statusCode in
 		}
 	}
 
-	//var statusCode = http.StatusOK
+	setStatusCode(ctx, statusCode)
 
 	if statusCode == http.StatusNoContent {
 		w.WriteHeader(statusCode)

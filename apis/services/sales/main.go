@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/HenriquePercu/go-service/apis/services/api/debug"
 	"github.com/HenriquePercu/go-service/apis/services/sales/mux"
+	"github.com/HenriquePercu/go-service/foundation/web"
 	"net/http"
 	"os"
 	"os/signal"
@@ -30,8 +31,7 @@ func main() {
 	}
 
 	traceIDFn := func(ctx context.Context) string {
-		return ""
-		//return otel.GetTraceID(ctx)
+		return web.GetValues(ctx).TraceID
 	}
 
 	log = logger.NewWithEvents(os.Stdout, logger.LevelInfo, "SALES", traceIDFn, events)

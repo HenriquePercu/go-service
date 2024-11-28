@@ -3,8 +3,10 @@ package web
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	"net/http"
 	"os"
+	"time"
 )
 
 // Handler HandlerFunc represents a function that handles a http request within our own
@@ -32,7 +34,14 @@ func (a *App) HandleFunc(pattern string, handler Handler, mw ...MidHandler) {
 	handler = wrapMiddleware(a.mw, handler)
 
 	h := func(w http.ResponseWriter, r *http.Request) {
-		if err := handler(r.Context(), w, r); err != nil {
+		v := Values{
+			TraceID: uuid.NewString(),
+			Now:     time.Now().UTC(),
+		}
+
+		ctx := setValues(r.Context(), v)
+
+		if err := handler(ctx, w, r); err != nil {
 			fmt.Println(err)
 			return
 		}
