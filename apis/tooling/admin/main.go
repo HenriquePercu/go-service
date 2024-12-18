@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	_ "embed"
 	"encoding/pem"
 	"fmt"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/open-policy-agent/opa/rego"
 	"log"
 	"os"
 	"time"
@@ -83,6 +87,40 @@ func GenToken() error {
 		return fmt.Errorf("encoding to public file: %w", err)
 	}
 
+	var b bytes.Buffer
+	if err := pem.Encode(&b, &publicBlock); err != nil {
+		return fmt.Errorf("encoding to public file: %w", err)
+	}
+
+	ctx := context.Background()
+	query := fmt.Sprintf("x = data.%s.%s", "ardan.rego", "auth")
+
+	q, err := rego.New(
+		rego.Query(query),
+		rego.Module("policy.rego", opaAuthentication),
+	).PrepareForEval(ctx)
+	if err != nil {
+		return err
+	}
+
+	input := map[string]any{
+		"Key":   b.String(),
+		"Token": str,
+		"ISS":   "service project",
+	}
+
+	results, err := q.Eval(ctx, rego.EvalInput(input))
+	if err != nil {
+		return fmt.Errorf("query: %w", err)
+	}
+
+	result, ok := results[0].Bindings["x"].(bool)
+	if !ok || !result {
+		return fmt.Errorf("bindings results[%v] ok[%v]", results, ok)
+	}
+
+	fmt.Println("\nTOKEN VALIDATED!")
+
 	return nil
 }
 
@@ -140,3 +178,6 @@ func GenKey() error {
 
 	return nil
 }
+
+//go:embed rego/authentication.rego
+var opaAuthentication string
