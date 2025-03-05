@@ -53,6 +53,24 @@ func (a *App) HandleFunc(pattern string, handler Handler, mw ...MidHandler) {
 	a.ServeMux.HandleFunc(pattern, h)
 }
 
+// HandleFuncNoMiddleware sets a handler function for a given HTTP method and
+// path pair to the application server mux with no middleware.
+func (a *App) HandleFuncNoMiddleware(pattern string, handler Handler, mw ...MidHandler) {
+	h := func(w http.ResponseWriter, r *http.Request) {
+		v := Values{
+			TraceID: uuid.NewString(),
+			Now:     time.Now().UTC(),
+		}
+		ctx := setValues(r.Context(), v)
+
+		if err := handler(ctx, w, r); err != nil {
+			return
+		}
+	}
+
+	a.ServeMux.HandleFunc(pattern, h)
+}
+
 // SignalShutdown is used to gracefully shut down the app when an integrity
 // issue is identified.
 func (a *App) SignalShutdown() {
@@ -97,4 +115,14 @@ func validateError(err error) bool {
 	}
 
 	return true
+}
+
+// GetTraceID returns the trace id from the context.
+func GetTraceID(ctx context.Context) string {
+	v, ok := ctx.Value("traceId").(string)
+	if !ok {
+		return "00000000000000000000000000000000"
+	}
+
+	return v
 }
