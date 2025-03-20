@@ -3,13 +3,12 @@ package authapi
 
 import (
 	"context"
+	"github.com/HenriquePercu/go-service/app/api/authclient"
 	"github.com/HenriquePercu/go-service/app/api/errs"
 	"github.com/HenriquePercu/go-service/app/api/mid"
 	"github.com/HenriquePercu/go-service/business/api/auth"
 	"github.com/HenriquePercu/go-service/foundation/web"
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 type api struct {
@@ -53,10 +52,7 @@ func (api *api) authenticate(ctx context.Context, w http.ResponseWriter, r *http
 		return errs.New(errs.Unauthenticated, err)
 	}
 
-	resp := struct {
-		UserID uuid.UUID
-		Claims auth.Claims
-	}{
+	resp := authclient.AuthenticateResp{
 		UserID: userID,
 		Claims: mid.GetClaims(ctx),
 	}
@@ -65,11 +61,7 @@ func (api *api) authenticate(ctx context.Context, w http.ResponseWriter, r *http
 }
 
 func (api *api) authorize(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var auth struct {
-		Claims auth.Claims
-		UserID uuid.UUID
-		Rule   string
-	}
+	var auth authclient.Authorize
 	if err := web.Decode(r, &auth); err != nil {
 		return errs.New(errs.FailedPrecondition, err)
 	}

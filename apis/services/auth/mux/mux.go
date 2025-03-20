@@ -5,7 +5,7 @@ package mux
 import (
 	"github.com/HenriquePercu/go-service/apis/services/api/mid"
 	"github.com/HenriquePercu/go-service/apis/services/auth/route/authapi"
-	"github.com/HenriquePercu/go-service/apis/services/sales/route/sys/checkapi"
+	"github.com/HenriquePercu/go-service/apis/services/auth/route/checkapi"
 	"github.com/HenriquePercu/go-service/business/api/auth"
 	"github.com/HenriquePercu/go-service/foundation/logger"
 	"github.com/HenriquePercu/go-service/foundation/web"
